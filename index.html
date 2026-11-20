@@ -1468,7 +1468,7 @@ function finCard5(co){
       g+=`<rect x="${(cx(i)+1).toFixed(1)}" y="${y(B[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-Bt-y(B[i])).toFixed(1)}" rx="2" fill="${last?`var(--vz${k}-b1)`:`var(--vz${k}-b)`}"><title>${Q[i]} ${nameB} ${B[i]}조 원</title></rect>`;
       if(i%2===1||last) g+=`<text x="${cx(i)}" y="${H-6}" text-anchor="middle"${last?' class="v"':""}>${Q[i]}</text>`; });
     g+=`<polyline points="${R.map((v,i)=>`${cx(i).toFixed(1)},${yr(v).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--vz${k}-l)" stroke-width="2"/>`;
-    R.forEach((v,i)=>{ g+=`<circle cx="${cx(i).toFixed(1)}" cy="${yr(v).toFixed(1)}" r="3" fill="var(--card)" stroke="var(--vz${k}-l)" stroke-width="1.5"><title>${Q[i]} ${nameR} ${v}%</title></circle>`; });
+    R.forEach((v,i)=>{ g+=`<circle cx="${cx(i).toFixed(1)}" cy="${yr(v).toFixed(1)}" r="4" fill="var(--vz${k}-l)" stroke="var(--card)" stroke-width="2"><title>${Q[i]} ${nameR} ${v}%</title></circle>`; });
     return `<svg class="qchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 8개 분기 ${nameA}, ${nameB}, ${nameR}">${g}</svg>`; };
   const leg = (a,b,r,k="") => `<div class="qleg meta"><span><i style="background:var(--vz${k}-a1)"></i>${a}</span><span><i style="background:var(--vz${k}-b1)"></i>${b}</span><span><i class="ln" style="background:var(--vz${k}-l)"></i>${r}</span></div>`;
   /* 표: 맨 왼쪽 칸 고정, 옆으로 밀기. 처음엔 오른쪽 끝(최근 분기)이 보이게 */
