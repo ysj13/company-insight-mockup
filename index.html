@@ -829,7 +829,7 @@ const BY_HOW = {"제목 규칙":"제목만으로 판정하는 공시 유형이�
 const ymd = iso => iso.replaceAll("-",".");
 
 /* 비교용 주소 값: ?wait=a 는 준비 중 표시를 이전의 보라 한 줄로, ?dv=… 는 그 공시 패널을 연 채로 시작 */
-const QS = new URLSearchParams(location.search), TL = QS.get("tl"), DL2 = QS.get("dl")==="2", DL3 = QS.get("dl")==="3" || QS.get("dl")==="4", DL4 = QS.get("dl")==="4", WAIT_A = QS.get("wait")==="a";
+const QS = new URLSearchParams(location.search), TL = QS.get("tl"), DLP = QS.get("dl") || "3" /* 공시 목록: 기본은 세로 선 타임라인(3). 비교용 1 = 날짜 제목 목록(이전), 2 = 날짜를 줄 안에, 4 = 선이 판단 색 */, DL2 = DLP==="2", DL3 = DLP==="3" || DLP==="4", DL4 = DLP==="4", WAIT_A = QS.get("wait")==="a";
 function dvHTML(co, e){
   const age = dnum(ASOF)-dnum(e.d);
   const sum = e.s
@@ -1246,7 +1246,7 @@ function allView(co){
   </section>`;
 }
 /* 날짜 묶음 목록의 맨 위 "예정" 묶음: 공시에 적힌 앞으로의 날짜. 누르면 그 날짜가 적힌 공시 */
-/* 비교용(?dl=3): 시간이 세로 선을 따라 흐른다. 위가 앞날, 흰 큰 점이 오늘, 아래로 갈수록 과거.
+/* 공시 타임라인(기본): 시간이 세로 선을 따라 흐른다. 위가 앞날, 흰 큰 점이 오늘, 아래로 갈수록 과거.
    점의 색이 호재·악재이고, 공시 사이의 간격이 날짜 차이만큼 벌어진다(하루 5px, 최대 14일치). 줄 사이 구분선은 없다 */
 function rail(co, past, newKey){
   const wd = d => "일월화수목금토"[new Date(d+"T00:00:00Z").getUTCDay()];
