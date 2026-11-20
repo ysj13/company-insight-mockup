@@ -245,7 +245,18 @@ main.inner{display:grid;gap:var(--s6);padding-block:var(--s8) var(--s12)}
 .fs-seg{margin-top:var(--s3)}
 /* 그래프 색. 기본은 회색 단계. 비교용 ?pal=a(청록 한 색 강조), ?pal=b(청록·노랑 두 색).
    빨강·파랑(호재·악재)과 보라(AI)는 뜻이 정해진 색이라 그래프에 쓰지 않는다. 색 검사(색약 구분, 어두운 바탕 대비)는 통과한 값 */
-:root{--vz-a:var(--g700);--vz-a1:var(--g400);--vz-b:var(--g450);--vz-b1:var(--text);--vz-1:var(--g200);--vz-2:var(--g400);--vz-3:var(--g600);--vz-4:var(--g700);--vz-h1:var(--text);--vz-h2:var(--g400);--vz-h3:var(--g600);--vz-h4:var(--g700)}
+/* 기본(사용자 결정 2026-11-21: "그래프마다 다른 짝"): 그래프마다 색 짝이 다르다. 수익성 = 청록·호박, 성장성 = 진한 청록·밝은 청록 + 호박 선,
+   안정성 = 진한 호박·밝은 호박 + 청록 선. 매출 구성 = 청록 단계, 주주 구성 = 청록·호박 + 회색. 마지막 분기를 따로 밝히지 않는다(x축 글자만 굵게).
+   예전 회색은 ?pal=0 */
+:root{--vz-a:var(--g700);--vz-a1:var(--g400);--vz-b:var(--g450);--vz-b1:var(--text);--vz-l:var(--text-sub);
+  --vz1-a:#199e70;--vz1-a1:#199e70;--vz1-b:#c98500;--vz1-b1:#c98500;--vz1-l:var(--g300);
+  --vz2-a:#137556;--vz2-a1:#137556;--vz2-b:#3ad49b;--vz2-b1:#3ad49b;--vz2-l:#e0a000;
+  --vz3-a:#a87000;--vz3-a1:#a87000;--vz3-b:#f2c14e;--vz3-b1:#f2c14e;--vz3-l:#3ad49b;
+  --vz-1:#3ad49b;--vz-2:#199e70;--vz-3:#137556;--vz-4:#0d5a42;--vz-h1:#199e70;--vz-h2:#c98500;--vz-h3:var(--g450);--vz-h4:var(--g700)}
+html.pal-0{--vz1-a:var(--g700);--vz1-a1:var(--g400);--vz1-b:var(--g450);--vz1-b1:var(--text);--vz1-l:var(--text-sub);
+  --vz2-a:var(--g700);--vz2-a1:var(--g400);--vz2-b:var(--g450);--vz2-b1:var(--text);--vz2-l:var(--text-sub);
+  --vz3-a:var(--g700);--vz3-a1:var(--g400);--vz3-b:var(--g450);--vz3-b1:var(--text);--vz3-l:var(--text-sub);
+  --vz-1:var(--g200);--vz-2:var(--g400);--vz-3:var(--g600);--vz-4:var(--g700);--vz-h1:var(--text);--vz-h2:var(--g400);--vz-h3:var(--g600);--vz-h4:var(--g700)}
 html.pal-a{--vz-a:var(--g700);--vz-a1:var(--g450);--vz-b:#137556;--vz-b1:#3ad49b;--vz-1:#3ad49b;--vz-2:#199e70;--vz-3:#137556;--vz-4:#0d5a42;--vz-h1:#3ad49b;--vz-h2:#199e70;--vz-h3:var(--g600);--vz-h4:var(--g700)}
 html.pal-b{--vz-a:#126b4d;--vz-a1:#199e70;--vz-b:#8a5c00;--vz-b1:#e0a000;--vz-1:#199e70;--vz-2:#c98500;--vz-3:var(--g450);--vz-4:var(--g700);--vz-h1:#199e70;--vz-h2:#c98500;--vz-h3:var(--g450);--vz-h4:var(--g700)}
 .hbar{display:flex;gap:2px;height:12px;margin-top:var(--s4);border-radius:3px;overflow:hidden} .hbar i{display:block;height:100%}
@@ -1436,20 +1447,20 @@ function finCard5(co){
   const yoy = a => a.map((v,i)=> i>=4 ? r1((v/a[i-4]-1)*100) : null);
   const sgn = v => v==null ? "-" : `<span class="${toneOf(v)}">${v>0?"+":""}${v.toFixed(1)}%</span>`;
   /* 막대 둘(같은 눈금) + 비율 선(오른쪽 눈금). 마지막 분기의 막대만 진하게 */
-  const combo = (A, B, R, nameA, nameB, nameR) => {
+  const combo = (A, B, R, nameA, nameB, nameR, k="") => {
     const W=CHART_W, H=170, T=14, Bt=24, L=2, Rr=36, gw=(W-L-Rr)/n, bw=Math.min(14, gw*.28), mx=Math.max(...A,...B)*1.1;
     const rmn=Math.min(...R), rmx=Math.max(...R), pad=Math.max(1,(rmx-rmn)*.6), lo=Math.max(0,rmn-pad), hi=rmx+pad;
     const y=v=>T+(H-T-Bt)*(1-v/mx), yr=v=>T+(H-T-Bt)*(1-(v-lo)/(hi-lo)), cx=i=>L+gw*(i+.5);
     let g=`<line x1="${L}" x2="${W-Rr}" y1="${H-Bt}" y2="${H-Bt}" stroke="var(--line-hover)"/>`;
     [0.5,1].forEach(f=>{ const v=mx/1.1*f; g+=`<line x1="${L}" x2="${W-Rr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--line)" stroke-dasharray="2 4"/><text x="${W-Rr+6}" y="${(y(v)+4).toFixed(1)}">${Math.round(v)}</text>`; });
     A.forEach((v,i)=>{ const last=i===n-1;
-      g+=`<rect x="${(cx(i)-bw-1).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-Bt-y(v)).toFixed(1)}" rx="2" fill="${last?"var(--vz-a1)":"var(--vz-a)"}"><title>${Q[i]} ${nameA} ${v}조 원</title></rect>`;
-      g+=`<rect x="${(cx(i)+1).toFixed(1)}" y="${y(B[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-Bt-y(B[i])).toFixed(1)}" rx="2" fill="${last?"var(--vz-b1)":"var(--vz-b)"}"><title>${Q[i]} ${nameB} ${B[i]}조 원</title></rect>`;
+      g+=`<rect x="${(cx(i)-bw-1).toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-Bt-y(v)).toFixed(1)}" rx="2" fill="${last?`var(--vz${k}-a1)`:`var(--vz${k}-a)`}"><title>${Q[i]} ${nameA} ${v}조 원</title></rect>`;
+      g+=`<rect x="${(cx(i)+1).toFixed(1)}" y="${y(B[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-Bt-y(B[i])).toFixed(1)}" rx="2" fill="${last?`var(--vz${k}-b1)`:`var(--vz${k}-b)`}"><title>${Q[i]} ${nameB} ${B[i]}조 원</title></rect>`;
       if(i%2===1||last) g+=`<text x="${cx(i)}" y="${H-6}" text-anchor="middle"${last?' class="v"':""}>${Q[i]}</text>`; });
-    g+=`<polyline points="${R.map((v,i)=>`${cx(i).toFixed(1)},${yr(v).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--text-sub)" stroke-width="1.5"/>`;
-    R.forEach((v,i)=>{ g+=`<circle cx="${cx(i).toFixed(1)}" cy="${yr(v).toFixed(1)}" r="3" fill="var(--card)" stroke="var(--text-sub)" stroke-width="1.5"><title>${Q[i]} ${nameR} ${v}%</title></circle>`; });
+    g+=`<polyline points="${R.map((v,i)=>`${cx(i).toFixed(1)},${yr(v).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--vz${k}-l)" stroke-width="2"/>`;
+    R.forEach((v,i)=>{ g+=`<circle cx="${cx(i).toFixed(1)}" cy="${yr(v).toFixed(1)}" r="3" fill="var(--card)" stroke="var(--vz${k}-l)" stroke-width="1.5"><title>${Q[i]} ${nameR} ${v}%</title></circle>`; });
     return `<svg class="qchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 8개 분기 ${nameA}, ${nameB}, ${nameR}">${g}</svg>`; };
-  const leg = (a,b,r) => `<div class="qleg meta"><span><i style="background:var(--vz-a1)"></i>${a}</span><span><i style="background:var(--vz-b1)"></i>${b}</span><span><i class="ln"></i>${r}</span></div>`;
+  const leg = (a,b,r,k="") => `<div class="qleg meta"><span><i style="background:var(--vz${k}-a1)"></i>${a}</span><span><i style="background:var(--vz${k}-b1)"></i>${b}</span><span><i class="ln" style="background:var(--vz${k}-l)"></i>${r}</span></div>`;
   /* 표: 맨 왼쪽 칸 고정, 옆으로 밀기. 처음엔 오른쪽 끝(최근 분기)이 보이게 */
   const table = rows => `<div class="tbl"><table class="num"><thead><tr><th>분기</th>${Q.map(q=>`<th>${q}</th>`).join("")}</tr></thead><tbody>${rows.map(([name,cells])=>`<tr><th>${name}</th>${cells.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   const strip = items => `<dl class="strip num">${items.map(([a,b])=>`<div><dt class="meta">${a}</dt><dd>${b}</dd></div>`).join("")}</dl>`;
@@ -1509,11 +1520,11 @@ function finCard5(co){
       <p class="meta faint fin-src">출처 DART 기업개황 · 주식 총수 · 최대주주 현황 · 직원 현황 · 사업보고서</p>`)
     + sec("재무", `<span class="meta">2026년 3분기 · 연결</span>`, `
       ${strip([["부채비율",`${dR[n-1].toFixed(1)}%`],["유동비율","257.8%"],["이자보상비율","45.2배"]])}
-      ${blk("수익성", "매출 · 순이익", say(`2026년 3분기 순이익은 ${jo(ni[n-1])}으로 1년 전 같은 분기보다 ${pctChg(ni)}.`) + combo(rev, ni, niR, "매출액", "순이익", "순이익률") + leg("매출액","순이익","순이익률")
+      ${blk("수익성", "매출 · 순이익", say(`2026년 3분기 순이익은 ${jo(ni[n-1])}으로 1년 전 같은 분기보다 ${pctChg(ni)}.`) + combo(rev, ni, niR, "매출액", "순이익", "순이익률", 1) + leg("매출액","순이익","순이익률", 1)
         + table([["매출액",rev.map(v=>v.toFixed(1))],["순이익",ni.map(v=>v.toFixed(1))],["순이익률",niR.map(v=>v.toFixed(1)+"%")],["순이익 1년 전 대비",yoy(ni).map(sgn)]]))}
-      ${blk("성장성", "영업이익", say(`2026년 3분기 영업이익은 ${jo(op[n-1])}으로 1년 전 같은 분기보다 ${pctChg(op)}.`) + combo(rev, op, opR, "매출액", "영업이익", "영업이익률") + leg("매출액","영업이익","영업이익률")
+      ${blk("성장성", "영업이익", say(`2026년 3분기 영업이익은 ${jo(op[n-1])}으로 1년 전 같은 분기보다 ${pctChg(op)}.`) + combo(rev, op, opR, "매출액", "영업이익", "영업이익률", 2) + leg("매출액","영업이익","영업이익률", 2)
         + table([["영업이익",op.map(v=>v.toFixed(1))],["영업이익률",opR.map(v=>v.toFixed(1)+"%")],["영업이익 1년 전 대비",yoy(op).map(sgn)]]))}
-      ${blk("안정성", "자본 · 부채", say(`부채비율은 ${dR[n-1].toFixed(1)}%로 1년 전(${dR[n-5].toFixed(1)}%)보다 ${dR[n-1]<dR[n-5]?"낮아졌어요":"높아졌어요"}. 빚이 자본의 4분의 1 수준이에요.`) + combo(F5.eq, F5.debt, dR, "총자본", "총부채", "부채비율") + leg("총자본","총부채","부채비율")
+      ${blk("안정성", "자본 · 부채", say(`부채비율은 ${dR[n-1].toFixed(1)}%로 1년 전(${dR[n-5].toFixed(1)}%)보다 ${dR[n-1]<dR[n-5]?"낮아졌어요":"높아졌어요"}. 빚이 자본의 4분의 1 수준이에요.`) + combo(F5.eq, F5.debt, dR, "총자본", "총부채", "부채비율", 3) + leg("총자본","총부채","부채비율", 3)
         + table([["총자본",F5.eq.map(v=>v.toFixed(0))],["총부채",F5.debt.map(v=>v.toFixed(0))],["부채비율",dR.map(v=>v.toFixed(1)+"%")]]))}
       ${blk("재무제표", "최근 4개 분기", `<div class="seg fs-seg" role="group" aria-label="재무제표">${[["is","손익계산서"],["bs","재무상태표"],["cf","현금흐름표"]].map(([k,l])=>`<button type="button" data-fst="${k}" aria-pressed="${FST===k}">${l}</button>`).join("")}</div>${fsTbl}`)}
       <p class="meta faint fin-src">출처 DART 재무제표</p>`)
