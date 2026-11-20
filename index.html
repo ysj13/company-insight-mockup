@@ -223,6 +223,7 @@ main.inner{display:grid;gap:var(--s6);padding-block:var(--s8) var(--s12)}
 .mini{margin-top:var(--s3)} .mini-h{display:flex;justify-content:space-between;align-items:baseline} .mini .qchart{margin-top:var(--s1)}
 .fin-src{margin-top:var(--s3)}
 .div3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3);margin:var(--s2) 0 0} .div3 dd{margin:2px 0 0;font-weight:600;color:var(--text-sub)} .div3 dd.last{color:var(--text)}
+html.in-frame{scrollbar-width:none} html.in-frame::-webkit-scrollbar{display:none}
 .qleg{display:flex;gap:var(--s3);margin-top:var(--s2)}
 .qleg span{display:inline-flex;align-items:center;gap:var(--s1)}
 .qleg i{width:10px;height:10px;border-radius:2px;display:inline-block}
@@ -1437,6 +1438,7 @@ sug.addEventListener("mousedown",e=>{ const b=e.target.closest("button"); if(b) 
 document.addEventListener("click",e=>{ if(!e.target.closest(".search")) sug.hidden=true; });
 
 render();
+if(window.self!==window.top) document.documentElement.classList.add("in-frame"); /* 비교 화면 안에서는 스크롤 막대를 숨긴다(휴대폰처럼 보이게). 스크롤은 그대로 된다 */
 if(QS.get("tab")==="fin"){ state.tab="fin"; render(); } /* 비교용: 처음부터 실적 탭 */
 if(QS.get("at")) setTimeout(()=>{ const el=document.querySelector(".tabcard"); if(el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 72); }, 400); /* 비교용: 탭 카드가 맨 위에 오게 */
 if(QS.get("dv")){ const w = DB[state.code].events.find(e=>e.tone!=="flat" && !e.s); if(w) openDrawer(keyOf(w)); } /* 비교용: 요약이 아직 없는 공시 패널을 연 채로 */
