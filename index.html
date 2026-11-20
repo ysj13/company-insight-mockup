@@ -246,6 +246,8 @@ main.inner{display:grid;gap:var(--s6);padding-block:var(--s8) var(--s12)}
 .hbar{display:flex;gap:2px;height:12px;margin-top:var(--s4);border-radius:3px;overflow:hidden} .hbar i{display:block;height:100%}
 .hleg{list-style:none;margin:var(--s3) 0 0;padding:0;display:grid;gap:var(--s2)} .hleg li{display:grid;grid-template-columns:10px minmax(0,1fr) auto 84px;gap:var(--s2);align-items:center}
 .hleg li i{width:10px;height:10px;border-radius:2px} .hleg li b{font-weight:600} .hleg li .meta{text-align:right} .hsub{margin-top:var(--s3)}
+.chk{list-style:none;margin:var(--s4) 0 0;padding:0;border-top:1px solid var(--line)} .chk li{display:flex;justify-content:space-between;gap:var(--s3);padding:var(--s3) 0;border-bottom:1px solid var(--line)}
+.chk li b{font-weight:600;text-align:right} .chk li.bad b{color:var(--down)}
 .aud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3);margin:var(--s4) 0 0}
 .aud div{background:var(--surface);border-radius:var(--r-md);padding:var(--s3)} .aud dd{margin:var(--s1) 0 0;font-size:var(--fs-card);font-weight:800}
 .aud .bad{background:linear-gradient(var(--down-soft),var(--down-soft)),var(--surface)} .aud .bad dd{color:var(--down)}
@@ -1473,18 +1475,28 @@ function finCard5(co){
   const holdBlk = blk("주주 구성", "2026년 반기보고서", say("최대주주 쪽 지분은 1년 동안 그대로이고, 회사가 가진 자기주식은 1.6%에서 2.4%로 늘었어요.")
     + `<div class="hbar" role="img" aria-label="주주 구성">${holders.map(h=>`<i style="width:${h[1]}%;background:${h[3]}"></i>`).join("")}</div>`
     + `<ul class="hleg num">${holders.map(h=>`<li><i style="background:${h[3]}"></i><span>${h[0]}</span><b>${h[1]}%</b><span class="meta">1년 전 ${h[2]}%</span></li>`).join("")}</ul>`
-    + `<p class="meta hsub">발행주식 59.7억 주</p>`);
-  const ratio = (name, now, ago) => `<div class="rt"><dt class="meta">${name}</dt><dd>${now}</dd><dd class="meta">1년 전 ${ago}</dd></div>`;
-  const peopleBlk = blk("사람", "2025년 사업보고서", say("직원은 1년 동안 2천 명쯤 늘었고, 평균 근속은 15년이 넘어요.")
-    + `<dl class="rt3 num">${ratio("직원 수","12.5만 명","12.3만")}${ratio("평균 근속","15.1년","14.8년")}${ratio("1인 평균 급여","1.3억 원","1.2억")}</dl>`);
-  const aud = [["2023년","적정"],["2024년","적정"],["2025년",AUD_BAD?"한정":"적정"]];
-  const audBlk = blk("감사의견", "사업보고서", say(AUD_BAD ? "2025년 감사의견이 \"한정\"이에요. 회계 처리 일부에 감사인이 동의하지 않았다는 뜻이에요." : "최근 3년 모두 \"적정\" 의견을 받았어요. 회계 처리에 문제가 없다는 감사인의 의견이에요.")
-    + `<dl class="aud">${aud.map(([y,v])=>`<div${v==="적정"?"":' class="bad"'}><dt class="meta">${y}</dt><dd>${v}</dd></div>`).join("")}</dl>`);
+    );
+  /* 주의할 점: 감사의견(DART 감사의견 API), 관리종목·투자주의 지정과 불성실공시법인 지정(거래소 공시 제목에서 찾는다. 규칙은 실제 공시로 확인 필요),
+     소송 제기(DART 주요사항 API). 문제가 없는 줄은 담담하게, 있는 줄만 악재 색. ?aud=bad 는 문제가 있는 회사의 모양 */
+  const risk = AUD_BAD
+    ? [["감사의견","2025년 한정",1],["관리종목·투자주의","2026.03 투자주의환기종목 지정",1],["불성실공시법인","2025.11 지정 1번",1],["소송 제기","최근 1년 2건",1]]
+    : [["감사의견","3년 연속 적정",0],["관리종목·투자주의","지정 없음",0],["불성실공시법인","지정 없음",0],["소송 제기","최근 1년 1건",1]];
+  const riskBlk = blk("주의할 점", "최근 3년", say(AUD_BAD ? "감사의견이 \"한정\"이고 투자주의환기종목으로 지정돼 있어요. 공시를 볼 때 이 점을 함께 봐야 해요." : "감사의견은 3년 연속 적정이고 거래소 지정 이력은 없어요. 최근 1년 소송 제기 공시가 1건 있어요.")
+    + `<ul class="chk">${risk.map(([a,b,bad])=>`<li${bad?' class="bad"':""}><span>${a}</span><b>${b}</b></li>`).join("")}</ul>`);
+  /* 주식 수 변화: 증자(감자) 현황 API + 전환사채·신주인수권부사채 발행결정 API. 아직 주식으로 바뀌지 않은 사채는 "모두 바뀌면"으로 따로 센다 */
+  const shr = AUD_BAD
+    ? { say:"최근 3년 동안 유상증자 1번, 전환사채 2번으로 주식 수가 20% 늘었어요. 남은 전환사채가 모두 주식으로 바뀌면 31%까지 늘어요.",
+        now:"2,890만 주", ago:"2,410만 주", full:"3,160만 주",
+        ev:[["2026.05","전환사채 발행","150억 원"],["2025.09","유상증자(제3자배정)","200억 원"],["2024.11","전환사채 발행","100억 원"]] }
+    : { say:"최근 3년 동안 유상증자나 전환사채 발행이 없어 주식 수가 그대로예요.", now:"59.7억 주", ago:"59.7억 주", full:null, ev:[] };
+  const shareBlk = blk("주식 수 변화", "최근 3년", say(shr.say)
+    + `<dl class="strip num"><div><dt class="meta">지금 발행주식</dt><dd>${shr.now}</dd></div><div><dt class="meta">3년 전</dt><dd>${shr.ago}</dd></div>${shr.full?`<div><dt class="meta">사채가 모두 바뀌면</dt><dd class="down">${shr.full}</dd></div>`:""}</dl>`
+    + (shr.ev.length ? `<ul class="chk num">${shr.ev.map(([d,a,b])=>`<li><span><span class="meta">${d}</span> ${a}</span><b>${b}</b></li>`).join("")}</ul>` : ""));
   return sec("정보", "", OV2 ? `
       <p class="say">1969년에 세운 전자 회사로, 가전·스마트폰과 반도체를 함께 만들어요.</p>
       ${strip([["업종","통신 및 방송 장비 제조업"],["대표이사","대표 2명"],["설립일","1969년 1월"],["결산월","12월"],["홈페이지",`<a class="dv-srclink" href="#" onclick="return false">열기${icon("external","sm")}</a>`]])}
-      ${mixBlk}${holdBlk}${peopleBlk}${audBlk}
-      <p class="meta faint fin-src">출처 DART 기업개황 · 사업보고서 · 최대주주 현황 · 소액주주 현황 · 직원 현황 · 감사의견</p>` : `
+      ${mixBlk}${holdBlk}${shareBlk}${riskBlk}
+      <p class="meta faint fin-src">출처 DART 기업개황 · 사업보고서 · 최대주주 현황 · 소액주주 현황 · 증자(감자) 현황 · 감사의견 · 주요사항보고서 · 거래소 공시</p>` : `
       <p class="say">1969년에 세운 전자 회사로, 가전·스마트폰과 반도체를 함께 만들어요.</p>
       ${strip([["업종","통신 및 방송 장비 제조업"],["대표이사","대표 2명"],["설립일","1969년 1월"],["결산월","12월"],["발행주식수","59.7억 주"],["최대주주 지분","20.1%"],["직원 수","12.6만 명"],["홈페이지",`<a class="dv-srclink" href="#" onclick="return false">열기${icon("external","sm")}</a>`]])}
       ${mixBlk}
