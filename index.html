@@ -351,6 +351,14 @@ button.drow:hover{background:var(--fill-hover)} button.drow:active{background:va
 .tl3 .today .lab,.tl3 .today .lab b{color:var(--text);font-weight:600}
 .tl3 .row-title{grid-column:1} .tl3 .go{grid-column:2;color:var(--text-faint);margin-top:calc((1.5em - 16px) / 2)} .tl3 .meta:not(.lab){grid-column:1}
 .tl3 .plan .row-title{color:var(--text-sub)}
+.tl4::before{display:none}
+.tl4>li{position:relative}
+.tl4>li::before,.tl4>li::after{content:"";position:absolute;left:7px;width:2px;border-radius:1px}
+.tl4>li::before{top:0;height:calc(var(--gap,0px) + var(--s2) + 10px);background:var(--c1,var(--line-hover))}
+.tl4>li::after{top:calc(var(--gap,0px) + var(--s2) + 10px);bottom:0;background:var(--c2,var(--line-hover))}
+.tl4>li:first-child::before{background:transparent}
+.tl4 .plan{--c1:var(--line-hover);--c2:var(--line-hover)}
+.tl4 .vc{margin-left:auto;font-weight:600} .tl4 .vc.up{color:var(--up)} .tl4 .vc.down{color:var(--down)} .tl4 .vc.flat{color:var(--text-sub)}
 .drow.plan{grid-template-columns:auto minmax(0,1fr) auto 16px;align-items:baseline}
 .drow.plan .dd{grid-column:1;color:var(--text-sub);font-weight:600}
 .drow.plan .row-title{color:var(--text-sub)}
@@ -821,7 +829,7 @@ const BY_HOW = {"제목 규칙":"제목만으로 판정하는 공시 유형이�
 const ymd = iso => iso.replaceAll("-",".");
 
 /* 비교용 주소 값: ?wait=a 는 준비 중 표시를 이전의 보라 한 줄로, ?dv=… 는 그 공시 패널을 연 채로 시작 */
-const QS = new URLSearchParams(location.search), TL = QS.get("tl"), DL2 = QS.get("dl")==="2", DL3 = QS.get("dl")==="3", WAIT_A = QS.get("wait")==="a";
+const QS = new URLSearchParams(location.search), TL = QS.get("tl"), DL2 = QS.get("dl")==="2", DL3 = QS.get("dl")==="3" || QS.get("dl")==="4", DL4 = QS.get("dl")==="4", WAIT_A = QS.get("wait")==="a";
 function dvHTML(co, e){
   const age = dnum(ASOF)-dnum(e.d);
   const sum = e.s
@@ -1079,9 +1087,9 @@ function render(){
   <section class="card" aria-label="공시 흐름" id="tl-card">
     ${DL2 || DL3 ? "" : `<div class="sec-h"><h2 class="card-title">공시 흐름</h2></div>`}
     ${none ? emptyBox("아직 모은 공시가 없어요","") : `
-    <div class="dl-head"><h3 class="box-title">최근 30일 공시</h3>${flats30.length ? `<div class="seg" role="group" aria-label="보기"><button type="button" data-flt="imp" aria-pressed="${!state.showAll}">호재·악재 <span class="num">${nImp}</span></button><button type="button" data-flt="all" aria-pressed="${!!state.showAll}">전체 <span class="num">${all30.length}</span></button></div>` : ""}</div>
-    ${DL3 ? rail(co, shownPast, newKey) : planGroup(co)}
-    ${!shownPast.length ? emptyBox(all30.length?"최근 30일 호재·악재 공시가 없어요":"최근 30일 공시가 없어요","") : ""}
+    <div class="dl-head"><h3 class="box-title">${DL3?"최근 30일 호재·악재 공시":"최근 30일 공시"}</h3>${flats30.length && !DL3 ? `<div class="seg" role="group" aria-label="보기"><button type="button" data-flt="imp" aria-pressed="${!state.showAll}">호재·악재 <span class="num">${nImp}</span></button><button type="button" data-flt="all" aria-pressed="${!!state.showAll}">전체 <span class="num">${all30.length}</span></button></div>` : ""}</div>
+    ${DL3 ? rail(co, all30.filter(e=>e.tone!=="flat"), newKey) : planGroup(co)}
+    ${!(DL3 ? nImp : shownPast.length) ? emptyBox(all30.length?"최근 30일 호재·악재 공시가 없어요":"최근 30일 공시가 없어요","") : ""}
     ${DL2 && shownPast.length ? `${co.watch.length?`<h4 class="box-title dgh">지난 공시</h4>`:""}<ul class="dlist${co.watch.length?"":" d2top"}">${shownPast.map((e,i)=>`<li data-day="${bday(e.d)}"><button type="button" class="item drow d2" data-dv="${esc(keyOf(e))}"><span class="d meta num">${i===0||shownPast[i-1].d!==e.d?md(e.d):""}</span><span class="tw ${e.tone}">${TONE[e.tone]}</span><span class="row-title">${keyOf(e)===newKey?`<span class="new-tag">새</span>`:""}${esc(e.r)}</span>${icon("open","sm go")}<span class="meta">${esc(e.k||e.g)}</span></button></li>`).join("")}</ul>` : ""}
     ${DL2 || DL3 ? "" : [...new Set(shownPast.map(e=>e.d))].map(d=>`<h4 class="box-title dgh num">${md(d)} ${"일월화수목금토"[new Date(d+"T00:00:00Z").getUTCDay()]}${d===ASOF?" · 오늘":""}</h4>
       <ul class="dlist">${shownPast.filter(e=>e.d===d).map(e=>`<li data-day="${bday(e.d)}"><button type="button" class="item drow" data-dv="${esc(keyOf(e))}"><span class="tw ${e.tone}">${TONE[e.tone]}</span><span class="row-title">${keyOf(e)===newKey?`<span class="new-tag">새</span>`:""}${esc(e.r)}</span>${icon("open","sm go")}<span class="meta">${esc(e.k||e.g)}</span></button></li>`).join("")}</ul>`).join("")}`}
@@ -1244,10 +1252,17 @@ function rail(co, past, newKey){
   const wd = d => "일월화수목금토"[new Date(d+"T00:00:00Z").getUTCDay()];
   const plans = [...co.watch].sort((a,b)=>b[0].localeCompare(a[0])).map(([d,t])=>
     `<li class="plan"><span class="n" aria-hidden="true"></span><div class="t3 static"><span class="lab meta num"><b>${md(d)}</b>예정 · D-${dnum(d)-dnum(ASOF)}</span><span class="row-title">${esc(t)}</span></div></li>`).join("");
-  const today = `<li class="today"><span class="n" aria-hidden="true"></span><div class="t3 static"><span class="lab meta num"><b>${md(ASOF)} ${wd(ASOF)}</b>오늘</span></div></li>`;
+  /* 새 안 3(?dl=4): 선이 그때의 판단 색을 띤다(호재 빨강, 악재 파랑, 중립·보류 회색). 판단이 바뀐 공시에는 "→ 바뀐 판단" */
+  const vAt = iso => { const sc = scoreAt(co, iso); return sc.hold ? ["판단 보류","flat"] : verdictOf(sc.s); };
+  const dayBefore = iso => new Date(Date.parse(iso+"T00:00:00Z")-864e5).toISOString().slice(0,10);
+  const col = cls => cls==="up" ? "var(--up)" : cls==="down" ? "var(--down)" : "var(--line-hover)";
+  const now = vAt(ASOF);
+  const today = `<li class="today"${DL4?` style="--c1:var(--line-hover);--c2:${col(now[1])}"`:""}><span class="n" aria-hidden="true"></span><div class="t3 static"><span class="lab meta num"><b>${md(ASOF)} ${wd(ASOF)}</b>오늘</span></div></li>`;
   const rows = past.map((e,i)=>{ const gap = Math.min(14, dnum(i ? past[i-1].d : ASOF) - dnum(e.d)) * 5;
-    return `<li data-day="${bday(e.d)}" style="--gap:${gap}px"><span class="n ${e.tone}" aria-hidden="true"></span><button type="button" class="t3 item" data-dv="${esc(keyOf(e))}"><span class="lab meta num"><b>${md(e.d)} ${wd(e.d)}</b><span class="tw ${e.tone}">${TONE[e.tone]}</span></span><span class="row-title">${keyOf(e)===newKey?`<span class="new-tag">새</span>`:""}${esc(e.r)}</span>${icon("open","sm go")}<span class="meta">${esc(e.k||e.g)}</span></button></li>`; }).join("");
-  return `<ol class="tl3">${plans}${today}${rows}</ol>`;
+    const after = vAt(e.d), before = vAt(dayBefore(e.d)), last = i===past.length-1;
+    const same = i>0 && past[i-1].d===e.d, chg = DL4 && !same && after[0]!==before[0] ? `<span class="vc ${after[1]}">→ ${after[0]}</span>` : "";
+    return `<li data-day="${bday(e.d)}" style="--gap:${gap}px${DL4?`;--c1:${col(after[1])};--c2:${last?"transparent":col(before[1])}`:""}"><span class="n ${e.tone}" aria-hidden="true"></span><button type="button" class="t3 item" data-dv="${esc(keyOf(e))}"><span class="lab meta num"><b>${md(e.d)} ${wd(e.d)}</b><span class="tw ${e.tone}">${TONE[e.tone]}</span>${chg}</span><span class="row-title">${keyOf(e)===newKey?`<span class="new-tag">새</span>`:""}${esc(e.r)}</span>${icon("open","sm go")}<span class="meta">${esc(e.k||e.g)}</span></button></li>`; }).join("");
+  return `<ol class="tl3${DL4?" tl4":""}">${plans}${today}${rows}</ol>`;
 }
 function planGroup(co){
   if(!co.watch.length) return "";
