@@ -406,6 +406,8 @@ button.drow:hover{background:var(--fill-hover)} button.drow:active{background:va
 .up-list li:first-child{border-top:0}
 .up-d{display:flex;flex-direction:column}
 .brief{margin:0;padding-left:var(--s4);display:grid;gap:var(--s2)}
+.b2{margin:0;display:grid;gap:var(--s2)} .b2>div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s3);align-items:baseline}
+.b2 dt{font-size:var(--fs-small);font-weight:600} .b2 dt.up{color:var(--up)} .b2 dt.down{color:var(--down)} .b2 dd{margin:0}
 .refs{white-space:nowrap}
 .ref{font-size:var(--fs-small);font-weight:600;color:var(--text-sub);border-radius:var(--r-sm);padding:0 var(--s1);margin-left:var(--s1);text-decoration:underline;text-underline-offset:3px;transition:color var(--fast),background var(--fast)}
 .ref:hover{color:var(--text);background:var(--fill-hover)}
@@ -858,7 +860,7 @@ function judgeCard(co){
     <div class="${fail?"stale":""}">
       <div class="vrow" style="margin-top:0"><span class="badge ${vCls}">${vText}</span>${asof}</div>
       ${TL==="m" ? mergedTL(co) : chart(co) + tlExtra(co)}
-      ${co.brief ? briefBox(co) : `<div class="lede ai-box">${AI}<p>${esc(co.lede)}</p></div>`}
+      ${QS.get("ai")==="2" ? brief2(co) : co.brief ? briefBox(co) : `<div class="lede ai-box">${AI}<p>${esc(co.lede)}</p></div>`}
     </div>
     ${failBox}
     ${foot}</section>`;
@@ -1119,6 +1121,15 @@ function bindHover(co){
     showAt(ki); });
 }
 
+/* 비교용(?ai=2): AI 요약을 호재 한 줄, 악재 한 줄로. 줄 앞 이름표가 그래프의 위(빨강)·아래(파랑)와 이어진다.
+   삼성전자는 써 둔 문장, 나머지는 최근 30일에서 영향이 큰 공시 두 건의 제목을 이어 붙인 예시 */
+const BRIEF2 = { "005930": { up:"3분기 영업이익 13% 증가, 자기주식 3조 원 취득", down:"특허 소송 피소, 중국 공장 장비 반입 제한" } };
+function brief2(co){
+  const top = tone => ev30(co).filter(e=>e.tone===tone).sort((a,b)=>b.imp-a.imp).slice(0,2).map(e=>e.r).join(", ");
+  const w = BRIEF2[state.code] || { up:top("up"), down:top("down") };
+  const row = (tone,t) => t ? `<div><dt class="${tone}">${TONE[tone]}</dt><dd>${esc(t)}</dd></div>` : "";
+  return `<div class="lede ai-box">${AI}<dl class="b2">${row("up",w.up)}${row("down",w.down)}</dl></div>`;
+}
 /* 긴 AI 요약: 화면에는 문장만. 문장마다 근거 공시는 데이터로 남겨 코드가 최근 30일 판단에 든 공시인지 확인한다 */
 function briefBox(co){
   const ref = d => { const e = co.events.find(x=>x.d===d && x.tone!=="flat"); return e ? `<button type="button" class="ref num" data-dv="${esc(keyOf(e))}">${md(d)}</button>` : ""; };
