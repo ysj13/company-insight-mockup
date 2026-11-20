@@ -1112,7 +1112,7 @@ function render(){
 
 
   <section class="tabcard" aria-label="자세히">
-  <div class="tabs" role="tablist" aria-label="회사 정보">${(FIN6 ? [["tl","공시",null],["fin","재무",null],["co","회사",null],["news","뉴스",null]] : [["tl","공시",null],["fin",FIN2?"실적·회사":"회사·실적",null],["news","뉴스",null]]).map(([k,l,c])=>`<button type="button" role="tab" id="tab-${k}" aria-controls="panel" aria-selected="${state.tab===k}" tabindex="${state.tab===k?0:-1}" data-tab="${k}">${l}${c?`<span class="meta faint num">${c}</span>`:""}</button>`).join("")}</div>
+  <div class="tabs" role="tablist" aria-label="회사 정보">${(FIN6 ? [["tl","공시",null],["fin","재무",null],["co","개요",null],["news","뉴스",null]] : [["tl","공시",null],["fin",FIN2?"실적·회사":"회사·실적",null],["news","뉴스",null]]).map(([k,l,c])=>`<button type="button" role="tab" id="tab-${k}" aria-controls="panel" aria-selected="${state.tab===k}" tabindex="${state.tab===k?0:-1}" data-tab="${k}">${l}${c?`<span class="meta faint num">${c}</span>`:""}</button>`).join("")}</div>
 
   <div id="panel" data-panel="${state.tab}" role="tabpanel" aria-labelledby="tab-${state.tab}" style="display:grid;gap:var(--s6)">
   ${state.tab==="co" && FIN6 ? finPart(co,"co") : state.tab==="fin" ? (FIN6 && co.fin ? finPart(co,"fin") : FIN5 && co.fin ? finCard5(co) : FIN4 && co.fin ? finCard4(co) : FIN3 && co.fin ? finCard3(co) : FIN2 && co.fin ? finCard2(co) : finCard + overview(co)) : state.tab==="news" ? newsCard(co) : `
@@ -1428,10 +1428,10 @@ function finCard5(co){
 }
 /* 비교용(?fin=6): 탭을 나눈다. 공시 · 재무 · 회사 · 뉴스. 재무 탭 = 실적(발표 기록) → 재무, 회사 탭 = 정보. 내용은 ?fin=5와 같다 */
 function finPart(co, part){
-  if(!co.fin) return `<section class="card" aria-label="${part==="co"?"회사":"재무"}">${emptyBox(part==="co"?"아직 모은 회사 정보가 없어요":"아직 모은 실적이 없어요","")}</section>`;
+  if(!co.fin) return `<section class="card" aria-label="${part==="co"?"회사":"재무"}">${emptyBox(part==="co"?"아직 모은 개요가 없어요":"아직 모은 실적이 없어요","")}</section>`;
   const parts = finCard5(co).split('<section class="card fin3 fin5" aria-label="').filter(x=>x.trim()).map(x=>'<section class="card fin3 fin5" aria-label="'+x);
   const by = name => parts.find(x=>x.startsWith(`<section class="card fin3 fin5" aria-label="${name}"`)) || "";
-  return part==="co" ? by("정보") : by("실적") + by("재무");
+  return part==="co" ? by("정보").replace('<h2 class="card-title">정보</h2>','') : by("실적") + by("재무"); /* 개요 탭에서는 탭 이름이 제목이라 "정보" 제목을 뺀다 */
 }
 /* 4. 회사 개요: DART 기업개황으로 채우는 자리(예시) */
 function overview(co){
