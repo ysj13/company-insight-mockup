@@ -784,7 +784,7 @@ function dayEvents(co){ const m={}; co.events.forEach(e=>{ const k=bday(e.d); (m
 
 /* 위: 판단 선 / 아래: 일별 공시 막대(호재는 위, 악재는 아래, 높이는 크기 합) */
 /* 그래프를 그릴 폭: 처음엔 680, 그린 뒤 실제 칸 폭을 재서 다르면 다시 그린다 */
-let CHART_W = 680;
+let CHART_W = 680; let FIN_W = 680; /* 재무 그래프는 그래프 칸(.chart-box)이 없어 따로 잰다 */
 /* 판단 카드의 그래프(기본): 최근 30일의 날짜별 공시 막대. 호재는 기준선 위로 빨강, 악재는 아래로 파랑, 높이는 그날 영향의 합.
    판정에 쓰인 30일(WINDOW)만 그려서 보이는 막대의 합이 곧 위의 판정이 된다 */
 /* 비교용 시안(?tl=h 가로 타임라인 / v 그래프 아래 세로 목록 / m 타임라인이 곧 그래프) */
@@ -1216,6 +1216,7 @@ function render(){
   ${state.tab==="co" && FIN6 ? finPart(co,"co") : state.tab==="fin" ? (FIN6 && co.fin ? finPart(co,"fin") : FIN5 && co.fin ? finCard5(co) : FIN4 && co.fin ? finCard4(co) : FIN3 && co.fin ? finCard3(co) : FIN2 && co.fin ? finCard2(co) : finCard + overview(co)) : state.tab==="news" ? newsCard(co) : tlCard}
   </div>
   </section>`;
+  const fq = document.querySelector(".fin5 .qchart"); if(fq){ const w = Math.round(fq.getBoundingClientRect().width); if(w>0 && Math.abs(w-FIN_W)>2){ FIN_W = w; render(); return; } }
   const box = document.querySelector(".chart-box"); if(box){ const w = Math.round(box.clientWidth); if(w>0 && Math.abs(w-CHART_W)>2){ CHART_W = w; render(); return; } }
   if(!none){ bindHover(co); document.querySelectorAll(".tbl").forEach(t=>{ t.scrollLeft=t.scrollWidth; }); const hx=document.querySelector(".htl"); if(hx) hx.scrollLeft=hx.scrollWidth;
     if(hx && TL==="h2"){ /* 줄을 옆으로 밀면 맨 앞에 온 공시의 막대가 켜진다 */
@@ -1457,7 +1458,7 @@ function finCard5(co){
   const sgn = v => v==null ? "-" : `<span class="${toneOf(v)}">${v>0?"+":""}${v.toFixed(1)}%</span>`;
   /* 막대 둘(같은 눈금) + 비율 선(오른쪽 눈금). 마지막 분기의 막대만 진하게 */
   const combo = (A, B, R, nameA, nameB, nameR, k="") => {
-    const W=CHART_W, H=170, T=14, Bt=24, L=2, Rr=36, gw=(W-L-Rr)/n, bw=Math.min(14, gw*.28), mx=Math.max(...A,...B)*1.1;
+    const W=FIN_W, H=200, T=14, Bt=24, L=2, Rr=36, gw=(W-L-Rr)/n, bw=Math.min(18, gw*.36), mx=Math.max(...A,...B)*1.08; /* W는 실제 화면 너비(FIN_W). 예전엔 680으로 그려 휴대폰에서 절반으로 줄어 막대·글자가 작았다 */
     const rmn=Math.min(...R), rmx=Math.max(...R), pad=Math.max(1,(rmx-rmn)*.6), lo=Math.max(0,rmn-pad), hi=rmx+pad;
     const y=v=>T+(H-T-Bt)*(1-v/mx), yr=v=>T+(H-T-Bt)*(1-(v-lo)/(hi-lo)), cx=i=>L+gw*(i+.5);
     let g=`<line x1="${L}" x2="${W-Rr}" y1="${H-Bt}" y2="${H-Bt}" stroke="var(--line-hover)"/>`;
