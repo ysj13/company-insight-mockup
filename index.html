@@ -386,7 +386,9 @@ button.drow:hover{background:var(--fill-hover)} button.drow:active{background:va
 .flat10 .judge .foot{border-top:0;padding-top:0;margin-top:var(--s3)}
 .ai11 .judge{border-width:1px;border-color:var(--ai-line);background:linear-gradient(var(--ai-wash),var(--ai-wash)),var(--card)} .ai11 .judge .vrow{display:none}
 .ai11 .judge .ai-box{margin-top:0;background:none;border:0;padding:0} /* 카드가 곧 AI 요약이라 안쪽 상자를 걷는다 */
-.co-line11{margin-top:calc(var(--s6) * -1 + var(--s1))} .ai11 .co-line{color:var(--text)}
+.co11{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:var(--s1) var(--s3)}
+.co11 h1{min-width:0} .co11 .badge{font-size:var(--fs-value);justify-self:end;white-space:nowrap} .co11 .meta{margin:0} .co11 > .meta:last-child{justify-self:end}
+@media (max-width:600px){ .co11 .badge{font-size:var(--fs-card)} } .ai11 .co-line{color:var(--text)}
 .v11{display:grid;justify-items:end;gap:2px;padding-top:var(--s1);white-space:nowrap} .v11 .badge{font-size:var(--fs-title)}
 .flat10 .co8 .meta{margin-top:var(--s1)} .flat10 .co-line{color:var(--text)}
 .co-line{margin:var(--s2) 0 0;font-size:var(--fs-small);color:var(--text-sub)}
@@ -1137,7 +1139,7 @@ function render(){
   const v8 = now.hold ? ["판단 보류","flat"] : verdictOf(now.s);
   app.classList.toggle("flat10", FIN10); app.classList.toggle("ai11", FIN11); /* ?fin=11: 판단은 회사 이름 옆(어느 탭에서든), 요약 탭의 첫 카드는 AI 요약 */ /* 비교용(?fin=10): 판단 탭에서 판단을 상자 없이 그 탭의 첫 줄로 */
   if(FIN8){ app.innerHTML = `
-  <div class="co co8"><div><h1>${co.name}</h1><div class="meta num">${state.code} · ${co.market}${(FIN10||FIN11) && CO_LINE[state.code] ? "" : " · "+co.sector}</div>${FIN9 && !FIN11 ? `<p class="co-line">${esc(CO_LINE[state.code] || co.sector+" · "+co.market+" 상장")}</p>` : ""}</div>${FIN11 ? `<div class="v11"><span class="badge ${now.hold?"hold":v8[1]}">${v8[0]}</span><span class="meta num">${md(judgeDay())} 기준</span></div>` : state.tab!=="judge"?`<button type="button" class="v8 ${v8[1]}" data-tab="judge">${v8[0]}</button>`:""}</div>${FIN11 ? `<p class="co-line co-line11">${esc(CO_LINE[state.code] || co.sector+" · "+co.market+" 상장")}</p>` : ""}
+  ${FIN11 ? `<div class="co co11"><h1>${co.name}</h1><span class="badge ${now.hold?"hold":v8[1]}">${v8[0]}</span><div class="meta num">${state.code} · ${co.market}</div><span class="meta num">${md(judgeDay())} 기준</span></div>` : `<div class="co co8"><div><h1>${co.name}</h1><div class="meta num">${state.code} · ${co.market}${(FIN10||FIN11) && CO_LINE[state.code] ? "" : " · "+co.sector}</div>${FIN9 && !FIN11 ? `<p class="co-line">${esc(CO_LINE[state.code] || co.sector+" · "+co.market+" 상장")}</p>` : ""}</div>${FIN11 ? `<div class="v11"><span class="badge ${now.hold?"hold":v8[1]}">${v8[0]}</span><span class="meta num">${md(judgeDay())} 기준</span></div>` : state.tab!=="judge"?`<button type="button" class="v8 ${v8[1]}" data-tab="judge">${v8[0]}</button>`:""}</div>`}
   <div class="tabs tabs8" role="tablist" aria-label="회사 화면">${[["judge",FIN11?"요약":"판단"],["co","개요"],["fin","재무"],["news","뉴스"]].map(([k,l])=>`<button type="button" role="tab" id="tab-${k}" aria-controls="panel" aria-selected="${state.tab===k}" tabindex="${state.tab===k?0:-1}" data-tab="${k}">${l}</button>`).join("")}</div>
   <div id="panel" class="panel8" data-panel="${state.tab}" role="tabpanel" aria-labelledby="tab-${state.tab}">
   ${state.tab==="judge" ? judgeCard(co) + tlCard.replace('id="tl-card">','id="tl-card"><div class="sec-h"><h2 class="card-title">공시</h2></div>') : state.tab==="co" ? finPart(co,"co") : state.tab==="fin" ? finPart(co,"fin") : newsCard(co)}
