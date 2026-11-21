@@ -1797,7 +1797,7 @@ document.addEventListener("click",e=>{ if(!e.target.closest(".search")) sug.hidd
 
 render();
 if(window.self!==window.top) document.documentElement.classList.add("in-frame"); /* 비교 화면 안에서는 스크롤 막대를 숨긴다(휴대폰처럼 보이게). 스크롤은 그대로 된다 */
-if(QS.get("tab")==="fin"||QS.get("tab")==="co"){ state.tab=QS.get("tab"); render(); } /* 비교용: 처음부터 실적 탭 */
+if(["fin","co","news"].includes(QS.get("tab"))){ state.tab=QS.get("tab"); render(); } /* 비교용: 처음부터 실적 탭 */
 if(QS.get("at")) setTimeout(()=>{ const el=document.querySelector(".tabcard"); if(el) window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 72); }, 400); /* 비교용: 탭 카드가 맨 위에 오게 */
 if(QS.get("dv")){ const w = DB[state.code].events.find(e=>e.tone!=="flat" && !e.s); if(w) openDrawer(keyOf(w)); } /* 비교용: 요약이 아직 없는 공시 패널을 연 채로 */
 </script>
