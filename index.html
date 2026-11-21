@@ -972,7 +972,7 @@ const boldNum = t => t.replace(/\d[\d.,]*(?:\s?(?:조|억|만|천))?\s?(?:원|%p
 function dvHTML(co, e){
   const age = dnum(ASOF)-dnum(e.d);
   const sum = e.s
-    ? `<div class="ai-box">${AI}<ul>${e.s.map(x=>`<li>${TLN_EASY ? esc(x) : boldNum(esc(x))}</li>`).join("")}</ul></div>`
+    ? `<div class="ai-box">${AI}<ul>${e.s.map(x=>`<li>${QS.get("bold")==="1" ? boldNum(esc(x)) : esc(x)}</li>`).join("")}</ul></div>`
     : e.tone==="flat" ? "" /* 중립 공시는 요약하지 않는다: 제목과 원문 링크만 */
     : WAIT_A ? `<p class="ai-wait">AI 요약 준비 중</p>` /* 비교용(?wait=a): 전체 보라 한 줄(이전 방식) */
     : `<p class="ai-wait b"><span class="box-title ai-tag">AI 요약</span><span class="meta">준비 중</span></p>`; /* 호재·악재인데 요약이 아직 없을 때: 요약 상자와 같은 보라 이름표 + 회색 상태 */
