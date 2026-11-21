@@ -343,7 +343,7 @@ footer{text-align:center;padding-block:var(--s2) var(--s12);line-height:1.8}
 <script>
 /* ───────── 예시 데이터 (실제 데이터 아님) ─────────
    events: d 날짜, tone up/down/flat, imp 영향 0~3(flat은 0), g 공시 분류, t DART 공시 이름(원문 그대로),
-           by 판정 방법(제목 규칙 / 본문 숫자 / AI), r 무슨 일인지 쉬운 말 한 줄(패널 제목), s AI 3줄 요약(선택)
+           by 판정 방법(제목 규칙 / 본문 숫자 / AI), r 무슨 일인지 쉬운 말 한 줄(패널 제목), s AI 요약(선택)
    brief: AI 요약 카드의 문장(삼성전자), 나머지 회사는 lede 한 문단
    watch: 공시에 적힌 앞으로의 날짜 [날짜, 이름] (MVP 뒤)
    판단은 데이터에 없고 화면에서 events로 계산한다(점수는 코드가 계산) */
@@ -521,7 +521,7 @@ function allEvents(co){
 }
 const findEv = (co,key) => allEvents(co).find(e=>keyOf(e)===key);
 
-/* 공시 한 건(패널): 호재·악재와 영향 → 쉬운 말 한 줄(제목) → "날짜 · DART 공시 이름"(원문 링크) → AI 3줄 요약 → 고지 */
+/* 공시 한 건(패널): 호재·악재와 영향 → 쉬운 말 한 줄(제목) → "날짜 · DART 공시 이름"(원문 링크) → AI 요약 → 고지 */
 function dvHTML(co, e){
   const sum = e.s
     ? `<div class="ai-box">${AI}<ul>${e.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`
