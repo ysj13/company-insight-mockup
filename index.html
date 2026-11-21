@@ -310,6 +310,9 @@ html.in-frame{scrollbar-width:none} html.in-frame::-webkit-scrollbar{display:non
 .news a .go{grid-row:1;grid-column:2;color:var(--text-faint);margin-top:calc((1.5em - 16px) / 2)}
 .news a .meta{grid-column:1}
 .news a[aria-current="true"]{background:var(--fill-selected)}
+.nrel{display:flex;align-items:center;gap:var(--s2);width:100%;min-width:0;margin:0 0 var(--s3);padding:var(--s2) var(--s3);border:0;border-radius:var(--r-md);background:var(--surface);color:var(--text);font:inherit;font-size:var(--fs-small);text-align:left;cursor:pointer;transition:background var(--fast)}
+.nrel:hover{background:var(--fill-hover)} .nrel b{font-weight:700;white-space:nowrap} .nrel .meta{white-space:nowrap}
+.nrel-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-sub)} .nrel svg{flex:none;color:var(--text-faint)}
 .dv .news-src{margin-top:var(--s6);display:inline-flex;align-items:center;gap:var(--s1);text-decoration:none}
 .dv .dv-title + p.meta{margin-top:var(--s2)} .dv p.meta + .ai-box,.dv p.meta + .ai-wait{margin-top:var(--s4)}
 .sec-h{display:flex;justify-content:space-between;align-items:center;gap:var(--s2);flex-wrap:wrap}
@@ -710,14 +713,14 @@ const NEWS = {
   ["오늘 · 11.06","미국 증시 기술주 혼조, 반도체 지수 하락","예시일보","3시간 전"],
   ["오늘 · 11.06","삼성전자 협력사와 공급 계약 규모 확대","예시일보","4시간 전"],
   ["오늘 · 11.06","다른 회사 상장 첫날 시가총액 화제","예시뉴스","5시간 전"],
-  ["어제 · 11.05","삼성전자, 신규 공급 계약 체결","예시경제","어제 17:20"],
-  ["어제 · 11.05","삼성전자 기업설명회 일정 공지","예시일보","어제 09:10"],
-  ["11.04","삼성전자, 패키징 업체 지분 취득 배경","예시뉴스","11.04"],
-  ["11.03","반도체 장비 업계, 4분기 수주 전망","예시일보","11.03"],
-  ["11.03","코스피 외국인 거래 동향","예시경제","11.03"],
-  ["10.28","삼성전자 3분기 영업이익 13% 증가","예시뉴스","10.28"],
-  ["10.28","삼성전자 3분기 실적 발표 뒤 해석 엇갈려","예시경제","10.28"]],
- "000660":[["오늘 · 11.06","고대역폭 메모리 공급 확대 계획 발표","예시일보","5시간 전"],["11.04","분기 실적 설명회 일정 안내","예시뉴스","11.04"]]
+  ["어제 · 11.05","삼성전자, 신규 공급 계약 체결","예시경제","17:20","2026-11-05"],
+  ["어제 · 11.05","삼성전자 기업설명회 일정 공지","예시일보","09:10"],
+  ["11.04","삼성전자, 패키징 업체 지분 취득 배경","예시뉴스","15:30","2026-11-03"],
+  ["11.03","반도체 장비 업계, 4분기 수주 전망","예시일보","10:12"],
+  ["11.03","코스피 외국인 거래 동향","예시경제","16:40"],
+  ["10.28","삼성전자 3분기 영업이익 13% 증가","예시뉴스","16:05","2026-10-28"],
+  ["10.28","삼성전자 3분기 실적 발표 뒤 해석 엇갈려","예시경제","18:30","2026-10-28"]],
+ "000660":[["오늘 · 11.06","고대역폭 메모리 공급 확대 계획 발표","예시일보","5시간 전"],["11.04","분기 실적 설명회 일정 안내","예시뉴스","14:00"]]
 };
 const IDEA = {1:true,2:true,3:true,4:true,5:true};
 const IDEA_NAME = {1:"공시 줄",2:"실적 한 문장",3:"새 공시 알림",4:"회사 개요",5:"뉴스 거르기"};
@@ -1610,7 +1613,14 @@ function newsCard(co){
   const l = all && (IDEA[5] && !newsAll ? mine : all);
   if(!all) return `<section class="card" aria-label="뉴스"><h2 class="card-title">뉴스</h2>${emptyBox("이 회사는 뉴스를 모으지 않아요", "")}</section>`;
   return `<section class="card" aria-label="뉴스"><div class="sec-h"><h2 class="card-title">뉴스</h2></div>
-    ${[...new Set(l.map(x=>x[0]))].map(day=>`<h3 class="box-title news-day">${day}</h3><ul class="news">${l.filter(x=>x[0]===day).map(x=>{ const [,t,src,when]=x; return `<li><a href="#" onclick="return false"${NEWS_SUM?` data-dv="news:${all.indexOf(x)}"`:""}><span class="row-title">${esc(t)}</span>${icon("open","sm go")}<span class="meta faint">${esc(src)} · ${esc(when)}</span></a></li>`; }).join("")}</ul>`).join("")}
+    ${[...new Set(l.map(x=>x[0]))].map(day=>`<h3 class="box-title news-day">${day}</h3><ul class="news">${l.filter(x=>x[0]===day).map(x=>{ const [,t,src,when,relD]=x;
+      /* 누르면 원문 기사로 바로 간다(새 창). 요약 예시(?news=sum)일 때만 패널을 연다 */
+      const a = NEWS_SUM ? `<a href="#" onclick="return false" data-dv="news:${all.indexOf(x)}"><span class="row-title">${esc(t)}</span>${icon("open","sm go")}<span class="meta faint">${esc(src)} · ${esc(when)}</span></a>`
+                         : `<a href="#" onclick="return false" target="_blank" rel="noopener"><span class="row-title">${esc(t)}</span>${icon("external","sm go")}<span class="meta faint">${esc(src)} · ${esc(when)}</span><span class="sr">(새 창)</span></a>`;
+      /* 같은 소식의 공시: 날짜와 핵심어가 겹치는 공시와 짝짓는다(실제 규칙은 미정, 예시는 손으로 짝지음). 누르면 그 공시 패널 */
+      const e = relD && co.events.find(v=>v.d===relD && v.tone!=="flat");
+      const rel = e ? `<button type="button" class="nrel" data-dv="${esc(keyOf(e))}"><span class="meta">관련 공시</span><b class="${e.tone}">${md(e.d)} ${TONE[e.tone]}</b><span class="nrel-t">${esc(e.r)}</span>${icon("open","sm")}</button>` : "";
+      return `<li>${a}${rel}</li>`; }).join("")}</ul>`).join("")}
     ${all.length>=10?`<div class="more"><button type="button" class="tbtn" onclick="return false">지난 뉴스 더 보기${CHEV}</button></div>`:""}</section>`;
 }
 /* 전체 공시 화면: 거르기(검색, 판정, 분류, 연도) + 20건씩 쪽 넘김. 모아 둔 2년보다 오래된 공시는 DART로 */
