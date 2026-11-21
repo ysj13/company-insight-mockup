@@ -302,7 +302,7 @@ html.in-frame{scrollbar-width:none} html.in-frame::-webkit-scrollbar{display:non
 .rep-list a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s1) var(--s3);padding:var(--s3);margin:0 calc(var(--s3) * -1);border-radius:var(--r-md);color:inherit;text-decoration:none;transition:background var(--fast)}
 .rep-list a:hover{background:var(--fill-hover)} .rep-list a .go{grid-row:1;grid-column:2;color:var(--text-faint);margin-top:calc((1.5em - 16px) / 2)} .rep-list a .meta{grid-column:1}
 .news-day{margin-top:var(--s4)}
-.news-day:first-of-type{margin-top:var(--s3)}
+.news-day:first-of-type{margin-top:var(--s3)} .news.flat{margin-top:var(--s2)}
 .news{list-style:none;margin:var(--s1) 0 0;padding:0}
 .news li + li{border-top:1px solid var(--line)}
 .news a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s1) var(--s3);padding:var(--s3);margin:0 calc(var(--s3) * -1);border-radius:var(--r-md);color:inherit;text-decoration:none;transition:background var(--fast)}
@@ -1081,18 +1081,22 @@ function fillDrawer(co,e){ const key=keyOf(e);
 /* 패널에 열린 공시의 줄을 선택 상태로 표시 */
 const markCurrent = key => document.querySelectorAll("#app [data-dv]").forEach(b=>{ if(key && b.dataset.dv===key) b.setAttribute("aria-current","true"); else b.removeAttribute("aria-current"); });
 /* 샘플(?news=sum): 뉴스를 누르면 패널에 AI 요약과 원문 링크. 뉴스 본문을 다루는 일은 약관·저작권 확인 전이라 표준에는 넣지 않는다 */
-const NEWS_SUM = true; /* 공개용: 뉴스 요약 샘플을 항상 켠다 */
+const NEWS_SUM = (QS.get("news")||"sum")==="sum"; /* 누르면 요약 + 원문 기사 보기 패널이 기본(사용자 2026-11-21). 원문으로 바로 가기는 ?news=link */
 const NEWS_S = { /* 예시 요약(실제 기사 아님) */
   "005930":{0:["반도체 설비 투자 계획이 업계의 관심을 받고 있다는 내용","투자 규모와 시기는 회사가 확정해 밝히지 않았다고 전함","확정되면 공시로 나올 수 있다고 덧붙임"],
     2:["협력사와 맺은 공급 계약의 규모가 커졌다는 내용","계약 상대와 금액은 기사에서 밝히지 않음","회사의 공식 발표는 아직 없다고 전함"],
     4:["메모리 반도체 공급 계약을 새로 맺었다는 내용","계약 금액은 최근 매출액의 1.2%라고 전함","계약 기간은 2027년 12월까지"],
     6:["반도체 패키징 업체의 지분을 취득한 배경을 다룬 내용","공급망 확보가 목적이라는 회사 설명을 전함","취득 금액은 자기자본의 0.4%"],
-    9:["3분기 잠정 영업이익이 1년 전보다 13% 늘었다는 내용","매출액은 7% 늘었다고 전함","확정 실적은 분기보고서로 다시 나온다고 덧붙임"]} };
+    5:["기업설명회를 연다는 회사의 안내를 전한 내용","날짜는 11월 13일, 3분기 실적과 사업 현황을 설명한다고 전함","참석 대상은 기관투자자와 증권사 분석가"],
+    9:["3분기 잠정 영업이익이 1년 전보다 13% 늘었다는 내용","매출액은 7% 늘었다고 전함","확정 실적은 분기보고서로 다시 나온다고 덧붙임"],
+    10:["3분기 실적 발표 뒤 업계의 해석이 엇갈린다는 내용","메모리 가격 회복을 두고 의견이 나뉜다고 전함","기사에 인용된 의견은 기사 작성자의 정리"]} };
+/* 줄과 패널에 쓰는 날짜·시각: 오늘은 "2시간 전", 어제는 "어제 17:20", 그 전은 "11.04 15:30" */
+const newsWhen = n => n[0].startsWith("오늘") ? n[3] : n[0].startsWith("어제") ? "어제 "+n[3] : n[0]+" "+n[3];
 function newsHTML(n, sum){
   return `<div class="dv">
     <div class="dv-verdict meta num"><span class="chip">뉴스</span></div>
     <h2 class="dv-title" id="dv-title">${esc(n[1])}</h2>
-    <p class="meta num">${esc(n[2])} · ${esc(n[3])}</p>
+    <p class="meta num">${esc(n[2])} · ${esc(newsWhen(n))}</p>
     ${sum ? `<div class="ai-box">${AI}<ul>${sum.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>` : `<p class="ai-wait b"><span class="box-title ai-tag">AI 요약</span><span class="meta">준비 중</span></p>`}
     ${sum ? `<p class="notice meta">AI 요약은 틀릴 수 있으며 투자 권유가 아니에요.</p>` : ""}
     <a class="btn news-src" href="#" onclick="return false">원문 기사 보기${icon("external","sm")}<span class="sr">(새 창)</span></a></div>`; }
@@ -1617,7 +1621,9 @@ function newsCard(co){
   const l = all && (IDEA[5] && !newsAll ? mine : all);
   if(!all) return `<section class="card" aria-label="뉴스"><h2 class="card-title">뉴스</h2>${emptyBox("이 회사는 뉴스를 모으지 않아요", "")}</section>`;
   return `<section class="card" aria-label="뉴스"><div class="sec-h"><h2 class="card-title">뉴스</h2></div>
-    ${[...new Set(l.map(x=>x[0]))].map(day=>`<h3 class="box-title news-day">${day}</h3><ul class="news">${l.filter(x=>x[0]===day).map(x=>{ const [,t,src,when,relD]=x;
+    ${(QS.get("ng")==="day" ? [...new Set(l.map(x=>x[0]))] : [null]).map(day=>`${day?`<h3 class="box-title news-day">${day}</h3>`:""}<ul class="news${day?"":" flat"}">${l.filter(x=>!day||x[0]===day).map(x=>{ const [dayL,t,src,w0,relD]=x;
+      /* 날짜 묶음 제목 없이 한 목록으로(사용자 2026-11-21: 묶음 제목과 줄이 두 줄로 나뉘어 읽기 어려움). 날짜는 줄의 출처 옆에. 묶음은 ?ng=day */
+      const when = day ? w0 : newsWhen(x);
       /* 누르면 원문 기사로 바로 간다(새 창). 요약 예시(?news=sum)일 때만 패널을 연다 */
       const a = NEWS_SUM ? `<a href="#" onclick="return false" data-dv="news:${all.indexOf(x)}"><span class="row-title">${esc(t)}</span>${icon("open","sm go")}<span class="meta faint">${esc(src)} · ${esc(when)}</span></a>`
                          : `<a href="#" onclick="return false" target="_blank" rel="noopener"><span class="row-title">${esc(t)}</span>${icon("external","sm go")}<span class="meta faint">${esc(src)} · ${esc(when)}</span><span class="sr">(새 창)</span></a>`;
